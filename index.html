@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Newsletter-Anmeldung</title>
+        <meta charset="UTF-8">
+        <!--CSS für die Newsletter Anmeldung-->
+        <link href="css/style.css" rel="stylesheet" type="text/css">
+
+    </head>
+
+
+
+    <body>
+        <div id="fehler" style="visibility: hidden">
+            <h3>Bitte korrigieren Sie Ihre Eingabe im Feld:</h3>
+        </div>
+
+        <div id="inhalt">
+            <form id="nlform" action="server/register.php">
+                <h1>Registrierung</h1>
+                <ol>
+                    <li>
+                        <label for="Vorname">Vorname</label>
+                        <input id="vorname" type="text" name="Vorname" placeholder="Maxine"  autofocus />
+                    </li>
+                    <li>
+                        <label for="Nachname">Nachname</label>
+                        <input id="nachname" type="text" name="Nachname" placeholder="Masters" />
+                    </li>
+                    <li>
+                        <label>Email-Adresse</label>
+                        <input type="text"  name="Email" placeholder="maxine@masters.com" >
+                    </li>
+                    <li>
+                        <label>Passwort</label>
+                        <input type="password"  name="Password" id="password" >
+                    </li>
+                    <li>
+                        <input id="submit_button" class="submit_button" type="button" value="Abschicken">
+                    </li>
+                </ol>
+
+            </form>
+        </div>
+
+        <script>
+
+            var fehlerobjekte = new Array();
+
+            /*
+             * Obsolet. Soll durch Serverseitige Überprüfung ersetzt werden
+             */
+            var checkPW = function (password)
+            {
+                console.log(password);
+                console.log(password.match(/[a-z]+[A-Z]+[0-9]+/gi));
+                //alert("Hi"+password);
+            };
+
+
+            var highlightThis = function (domobject, color)
+            {
+                //console.log("1px solid " + color);
+                domobject.style.border = "1px solid " + color;
+            };
+
+
+
+            var checkInputs = function ()
+            {
+
+                var input_elements = document.getElementsByTagName("input");
+                var returnwert = true;
+                for (var i = 0; i < input_elements.length; i++)
+                {
+                    if (input_elements[i].value == "")
+                    {
+                        //input_elements[i].style.border = "1px solid red";
+                        highlightThis(input_elements[i], "red");
+                        returnwert = false;
+                        fehlerobjekte.push(input_elements[i]);
+                    }
+                    else
+                    {
+                        //input_elements[i].style.border = "1px solid green";
+                        highlightThis(input_elements[i], "green");
+                    }
+                }
+                ;
+                return returnwert;
+
+            };
+
+
+            //wird nach Laden des HTML-Body ausgeführt...
+            //Stellt sicher, dass auf alle DOM-Elemente zugegriffen werden kann.
+            document.body.onload = function ()
+            {
+
+                var password = document.getElementById('password');
+                password.onkeydown = function ()
+                {
+
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function () {
+                        if (this.readyState == 4 && this.status == 200) {
+                            // Typical action to be performed when the document is ready:
+                            console.log(this.responseText);
+                            console.log(password.value.length > 0);
+                            if (xhttp.responseText == 'nok')
+                            {
+                                highlightThis(password, 'red');
+                                password.style.outline = 'none';
+
+                            } else
+                                highlightThis(password, 'green');
+
+                            if (!password.value.length > 0)
+                                highlightThis(password, 'lightgrey');
+                        }
+                    };
+                    xhttp.open("GET", "http://localhost/JS_AJAX_Registrierungsform/server/checkPW.php/?password=" + password.value, true);
+                    xhttp.send();
+                };
+
+
+                //Hole Button...
+                var submitbutton = document.getElementById("submit_button");
+                //Definiere ActionListener für Buttonklicks
+                //Wenn Button gedrückt wird... 
+
+                submitbutton.addEventListener('click', function ()
+                {
+                    //alert("Button geklickt!");
+
+                    //TODO: Eingaben prüfen
+                    //Aufrufen der jeweiligen Funktionen
+                    //alert("Eingaben werden geprüft");
+                    //checkInputs();
+                    //wenn Eingaben ok sind...
+                    //checkPW("?????");
+                    if (checkInputs())
+                    {
+                        //Hole Form-Objekt
+                        var nlform = document.getElementById("nlform");
+                        //Sende Form ab
+                        nlform.submit();
+                    }
+                    else
+                    {
+                        //TODO: Gib Fehler aus.
+                        if (fehlerobjekte.length > 0)
+                        {
+                            var fehlerdiv = document.getElementById("fehler");
+                            var tempdiv = document.createElement("div");
+                            tempdiv.innerHTML = "";
+                            fehlerobjekte.forEach(function (element)
+                            {
+                                var newp = document.createElement("p");
+                                newp.innerHTML = element.name;
+                                tempdiv.appendChild(newp);
+                            });
+
+                            fehlerdiv.appendChild(tempdiv);
+                        }
+                        //fehlerdiv.style.visibility = "visible";
+                    }
+                });
+
+            };
+        </script>
+
+
+    </body>
+</html>
